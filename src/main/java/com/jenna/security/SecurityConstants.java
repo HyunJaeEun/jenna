@@ -8,6 +8,7 @@ public class SecurityConstants { // 로그인시 사용자 인증 토큰 필터�
     public static final String TOKEN_PREFIX = "Bearer "; // will be passed on togetehr with header string in http request
     public static final String HEADER_STRING = "Authentication";
     public static final String SIGN_UP_URL = "/users";
+	public static final String VERIFICATION_EMAIL_URL = "/users/email-verification";
    
     public static String getTokenSecret()
     {

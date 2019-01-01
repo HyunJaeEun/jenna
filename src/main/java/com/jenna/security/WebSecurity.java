@@ -29,7 +29,9 @@ public class WebSecurity extends WebSecurityConfigurerAdapter{
        //configure post request that is sent to the url to authenticate
        // make post endpoint only public
         http.csrf().disable().authorizeRequests()
-        .antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL)
+        .antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL) 				//end포인트에서 사용자가 자유롭게 접급할 수 있는 페이지(?)를  지정
+        .permitAll()
+        .antMatchers(HttpMethod.GET, SecurityConstants.VERIFICATION_EMAIL_URL)		//end포인트에서 사용자가 자유롭게 접급할 수 있는 페이지를 지정 1.SecurityConstants 2.permitAll()
         .permitAll()
         .anyRequest().authenticated().and()
         .addFilter(getAuthenticationFilter())
