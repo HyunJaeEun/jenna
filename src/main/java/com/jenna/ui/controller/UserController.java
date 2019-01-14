@@ -55,6 +55,7 @@ public class UserController {
 																									// REQUEST
 			produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE } // 응답하는 타입 HTTP RESPONSE
 	)
+	
 	public UserRest createUser(@RequestBody UserDetailsRequestModel userDetails) {
 
 		UserRest returnValue = new UserRest();

@@ -1,6 +1,7 @@
 package com.jenna.service.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +20,7 @@ import com.jenna.exceptions.UserServiceException;
 import com.jenna.io.entity.UserEntity;
 import com.jenna.io.repositories.UserRepository;
 import com.jenna.service.UserService;
+import com.jenna.shared.AmazonSES;
 import com.jenna.shared.Utils;
 import com.jenna.shared.dto.UserDTO;
 import com.jenna.ui.model.response.ErrorMessages;
@@ -55,22 +58,30 @@ public class UserServiceImpl implements UserService {
 		userEntity.setUserId(publidUserId);
 		userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 		userEntity.setEmailVerificationToken(utils.gernerateEmailVerificationToken(publidUserId));
+		userEntity.setEmailVerificationStatus(false);  //이메일 verification 여부 (회원가입당시 이메일 유효검사가 맞으면 true, 유효하지 않은 이메일이면 false)
+		
 
 		UserEntity storedUserDetails = userRepository.save(userEntity);
 
 		UserDTO returnValue = new UserDTO();
 		BeanUtils.copyProperties(storedUserDetails, returnValue);
 
-		return returnValue;
+		//Send an email message to user to verify their email address
+	    new AmazonSES().verifyEmail(returnValue);
+		
+	    return returnValue;
 	}
 
 	@Override
 	public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 		UserEntity userEntity = userRepository.findByEmail(email);
-		if (userEntity == null) throw new UsernameNotFoundException(email);
+		if (userEntity == null ) throw new UsernameNotFoundException(email);
+		
 
 		// if it is not null, it returns user object which is spring object and implements userDetails
-		return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
+		//return new User(userEntity.getEmail(), userEntity.getEncryptedPassword(), new ArrayList<>());
+		return new User(userEntity.getEmail(),userEntity.getEncryptedPassword(), userEntity.getEmailVerificationStatus(),
+				true, true ,true,  new ArrayList<>());
 	}
 
 	@Override
